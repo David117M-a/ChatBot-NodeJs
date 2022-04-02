@@ -58,6 +58,57 @@ const updateChatAlert = async (req = request, res = response) => {
         });
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
+const createMensajesInChatAlert = async (req = request, res = response) => {
+    const { idChatAlert } = req.params;
+    const { mensajes } = req.body;
+
+    try {
+        await Promise.all(mensajes.map(async m => {
+            const mensaje = new MensajesChatAlerts();
+            mensaje.idChatAlert = idChatAlert;
+            mensaje.mensaje = m;
+            await mensaje.save();
+        }));
+
+        return res.status(201).json({
+            msg: 'Mensajes creados con éxito',
+            mensajes
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
+const deleteMensajesChatAlert = async (req = request, res = response) => {
+    const { idChatAlert } = req.params;
+    const { mensajes } = req.body;
+
+    try {
+        await Promise.all(mensajes.map(async m => {
+            await MensajesChatAlerts.destroy({
+                where: {
+                    id: m
+                }
+            });
+        }));
+
+        return res.status(200).json({
+            msg: 'Mensajes eliminados con éxito'
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
     }
 }
 
@@ -100,5 +151,7 @@ module.exports = {
     createChatAlerts,
     updateChatAlert,
     disableChatAlert,
-    enableChatAlert
+    enableChatAlert,
+    createMensajesInChatAlert,
+    deleteMensajesChatAlert
 }

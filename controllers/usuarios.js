@@ -2,6 +2,7 @@ const { request, response } = require("express");
 const Usuario = require('../models/usuarios');
 const bcryptjs = require('bcryptjs');
 const Bot = require('../models/bot');
+const CensuraDelChat = require("../models/censuraDelChat");
 
 const bot = undefined;
 
@@ -171,6 +172,83 @@ const updateUsuario = async (req = resquest, res = response) => {
     }
 }
 
+const getPalabrasCensuradas = async (req = request, res = response) => {
+    const { idUsuario } = req.params;
+    try {
+        const palabras = await CensuraDelChat.findAll({
+            where: {
+                idUsuario: idUsuario
+            }
+        });
+
+        return res.status(200).json({
+            palabras
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(200).json({
+            palabras: []
+        });
+    }
+}
+
+const createPalabrasACensurar = async (req = request, res = response) => {
+    const { body } = req;
+    const { idUsuario } = req.params;
+
+    try {
+        if (!body.palabras || body.palabras.length <= 0) {
+            return res.status(400).json({
+                msg: 'No se encontró el body o no hay palabras en la petición'
+            });
+        }
+
+        let response = await Promise.all(body.palabras.map(async p => {
+            const palabraExiste = await CensuraDelChat.findOne({ where: { palabra: p } });
+            if(palabraExiste) return false;
+            const palabra = new CensuraDelChat({
+                idUsuario,
+                palabra: p
+            });
+
+            await palabra.save();
+            return palabra;
+        })).catch(console.log);
+
+        return res.status(201).json({
+            msg: 'Palabras a censurar guardadas con éxito',
+            palabras: response
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
+const deletePalabraCensurada = async (req = request, res = response) => {
+    const { idPalabra } = req.params;
+
+    try {
+        await CensuraDelChat.destroy({
+            where: {
+                id: idPalabra
+            }
+        });
+
+        res.status(200).json({
+            msg: 'Palabra eliminada'
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+}
+
 module.exports = {
     login,
     getUsuarios,
@@ -178,5 +256,8 @@ module.exports = {
     createUsuario,
     updateUsuario,
     iniciarBot,
-    detenerBot
+    detenerBot,
+    createPalabrasACensurar,
+    getPalabrasCensuradas,
+    deletePalabraCensurada
 }

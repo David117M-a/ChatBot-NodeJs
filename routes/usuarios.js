@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { getUsuarios, getUsuarioById, createUsuario, login, updateUsuario, iniciarBot, detenerBot } = require('../controllers/usuarios');
+const { getUsuarios, getUsuarioById, createUsuario, login, updateUsuario, iniciarBot, detenerBot, createPalabrasACensurar, getPalabrasCensuradas, deletePalabraCensurada } = require('../controllers/usuarios');
 const router = Router();
 
 router.post('/login', login);
@@ -15,5 +15,11 @@ router.post('/bot/:idUsuario', iniciarBot);
 router.delete('/bot', detenerBot);
 
 router.put('/:id', updateUsuario);
+
+router.post('/censura/:idUsuario', createPalabrasACensurar);
+
+router.get('/censura/:idUsuario', getPalabrasCensuradas);
+
+router.delete('/censura/:idPalabra', deletePalabraCensurada);
 
 module.exports = router;

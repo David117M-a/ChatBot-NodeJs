@@ -1,5 +1,6 @@
 const dotenv = require('dotenv').config();
 const tmi = require('tmi.js');
+const CensuraDelChat = require('./censuraDelChat');
 const ChatAlerts = require('./chatAlerts');
 const Comando = require('./comandos');
 const MensajesChatAlerts = require('./mensajesChatAlerts');
@@ -45,63 +46,63 @@ class Bot {
         this.client.on('chat', async (target, context, message, self) => {
             if (self) return;
 
-            const commandName = message.trim();
+            const chatMessage = message.trim();
 
             try {
-                if (commandName.startsWith('!')) {
-                    if(context.username != this.channel) return;
+                if (chatMessage.startsWith('!')) {
+                    if (context.username != this.channel) return;
 
-                    if (commandName.includes("!ban")) {
-                        this.client.ban(this.channel, commandName.split(' ')[1], commandName.slice((commandName.split(' ')[0].length + commandName.split(' ')[1].length + 2))).catch(err => console.log(err));
+                    if (chatMessage.includes("!ban")) {
+                        this.client.ban(this.channel, chatMessage.split(' ')[1], chatMessage.slice((chatMessage.split(' ')[0].length + chatMessage.split(' ')[1].length + 2))).catch(err => console.log(err));
                         return;
                     }
 
-                    if (commandName.includes("!unban")) {
-                        this.client.unban(this.channel, commandName.split(' ')[1]).catch(err => console.log(err));
+                    if (chatMessage.includes("!unban")) {
+                        this.client.unban(this.channel, chatMessage.split(' ')[1]).catch(err => console.log(err));
                         return;
                     }
 
-                    if (commandName.includes("!host")) {
-                        this.client.host(this.channel, commandName.split(' ')[1]).catch(err => console.log(err));
+                    if (chatMessage.includes("!host")) {
+                        this.client.host(this.channel, chatMessage.split(' ')[1]).catch(err => console.log(err));
                         return;
                     }
 
-                    if (commandName.includes("!unhost")) {
+                    if (chatMessage.includes("!unhost")) {
                         this.client.say(target, 'The unhost command is not available now, you have to unhost manually');
                         return;
                     }
 
-                    if (commandName.includes("!mod")) {
-                        this.client.mod(this.channel, commandName.split(' ')[1]).catch(err => console.log(err));
+                    if (chatMessage.includes("!mod")) {
+                        this.client.mod(this.channel, chatMessage.split(' ')[1]).catch(err => console.log(err));
                         return;
                     }
 
-                    if (commandName.includes("!unmod")) {
-                        this.client.unmod(this.channel, commandName.split(' ')[1]).catch(err => console.log(err));
+                    if (chatMessage.includes("!unmod")) {
+                        this.client.unmod(this.channel, chatMessage.split(' ')[1]).catch(err => console.log(err));
                         return;
                     }
 
-                    if (commandName.includes("!slowoff")) {
+                    if (chatMessage.includes("!slowoff")) {
                         this.client.slowoff(this.channel);
                         return;
                     }
 
-                    if (commandName.includes("!slow")) {
-                        this.client.slow(this.channel, commandName.split(' ')[1]).catch(err => console.log(err));
+                    if (chatMessage.includes("!slow")) {
+                        this.client.slow(this.channel, chatMessage.split(' ')[1]).catch(err => console.log(err));
                         return;
                     }
 
-                    if (commandName.includes("!vip")) {
-                        this.client.vip(this.channel, commandName.split(' ')[1]).catch(err => console.log(err));
+                    if (chatMessage.includes("!vip")) {
+                        this.client.vip(this.channel, chatMessage.split(' ')[1]).catch(err => console.log(err));
                         return;
                     }
 
-                    if (commandName.includes("!unvip")) {
-                        this.client.unvip(this.channel, commandName.split(' ')[1]).catch(err => console.log(err));
+                    if (chatMessage.includes("!unvip")) {
+                        this.client.unvip(this.channel, chatMessage.split(' ')[1]).catch(err => console.log(err));
                         return;
                     }
 
-                    const comando = await Comando.findOne({ where: { nombre: commandName } });
+                    const comando = await Comando.findOne({ where: { nombre: chatMessage } });
                     if (!comando.activo) return;
 
                     const mensajes = await MensajesComandos.findAll({ where: { idComando: comando.id } });
@@ -110,7 +111,14 @@ class Bot {
                     const mensaje = await this.obtenerMensaje(mensajes, context);
                     return this.client.say(target, mensaje);
                 } else {
-                    const palabraClave = await PalabrasClaveComandos.findOne({ where: { palabra_clave: commandName } });
+                    const palabrasCensuradas = [] = await CensuraDelChat.findAll();
+                    let esMalaPalabra = false;
+                    palabrasCensuradas.forEach(p => {
+                        esMalaPalabra = chatMessage.toLowerCase().search(p.palabra.toLowerCase());
+                    });
+                    if(esMalaPalabra) return this.client.ban(this.channel, context.username, `No se pueden decir malas palabras en el chat. ${context.username} ha recibido como castigo el ban.`).catch(console.log);
+
+                    const palabraClave = await PalabrasClaveComandos.findOne({ where: { palabra_clave: chatMessage } });
                     if (palabraClave) {
                         const comando = await Comando.findByPk(palabraClave.idComando);
                         if (!comando.activo) return;
