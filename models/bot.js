@@ -114,8 +114,9 @@ class Bot {
                     const palabrasCensuradas = [] = await CensuraDelChat.findAll();
                     let esMalaPalabra = false;
                     palabrasCensuradas.forEach(p => {
-                        esMalaPalabra = chatMessage.toLowerCase().search(p.palabra.toLowerCase());
+                        if(chatMessage.toLowerCase().search(p.palabra.toLowerCase()) === 0) esMalaPalabra = true;
                     });
+                    console.log(esMalaPalabra);
                     if(esMalaPalabra) return this.client.ban(this.channel, context.username, `No se pueden decir malas palabras en el chat. ${context.username} ha recibido como castigo el ban.`).catch(console.log);
 
                     const palabraClave = await PalabrasClaveComandos.findOne({ where: { palabra_clave: chatMessage } });
