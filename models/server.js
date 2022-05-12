@@ -12,7 +12,9 @@ class Server {
         this.paths = {
             comandos: '/api/comandos',
             usuarios: '/api/usuarios',
-            chatAlerts: '/api/chat_alerts'
+            chatAlerts: '/api/chat_alerts',
+            contadorComentarios: '/api/top-fans',
+            timers: '/api/timers'
         }
 
         // Conectar a base de datos
@@ -54,6 +56,8 @@ class Server {
         this.app.use(this.paths.comandos, require('../routes/comandos'));
         this.app.use(this.paths.usuarios, require('../routes/usuarios'));
         this.app.use(this.paths.chatAlerts, require('../routes/chatAlerts'));
+        this.app.use(this.paths.contadorComentarios, require('../routes/contadorComentarios'));
+        this.app.use(this.paths.timers, require('../routes/timers'));
     }
 
     listen() {

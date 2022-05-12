@@ -3,6 +3,7 @@ const tmi = require('tmi.js');
 const CensuraDelChat = require('./censuraDelChat');
 const ChatAlerts = require('./chatAlerts');
 const Comando = require('./comandos');
+const ContadorMensajes = require('./contadorComentarios');
 const MensajesChatAlerts = require('./mensajesChatAlerts');
 const MensajesComandos = require('./mensajesComandos');
 const PalabrasClaveComandos = require('./palabrasClaveComandos');
@@ -114,10 +115,26 @@ class Bot {
                     const palabrasCensuradas = [] = await CensuraDelChat.findAll();
                     let esMalaPalabra = false;
                     palabrasCensuradas.forEach(p => {
-                        if(chatMessage.toLowerCase().search(p.palabra.toLowerCase()) === 0) esMalaPalabra = true;
+                        if (chatMessage.toLowerCase().search(p.palabra.toLowerCase()) === 0) esMalaPalabra = true;
                     });
-                    console.log(esMalaPalabra);
-                    if(esMalaPalabra) return this.client.ban(this.channel, context.username, `No se pueden decir malas palabras en el chat. ${context.username} ha recibido como castigo el ban.`).catch(console.log);
+
+                    if (esMalaPalabra) return this.client.ban(this.channel, context.username, `No se pueden decir malas palabras en el chat. ${context.username} ha recibido como castigo el ban.`).catch(console.log);
+
+                    let contador = await ContadorMensajes.findOne({ where: { username: context.username } });
+                    
+                    if (contador) {
+                        ContadorMensajes.update({
+                            no_comentarios: contador.no_comentarios + 1
+                        }, { where: { id: contador.id } });
+                    } else {
+                        const newContador = new ContadorMensajes({
+                            id_streamer: this.idUsuario,
+                            username: context.username,
+                            no_comentarios: 1
+                        });
+
+                        await newContador.save();
+                    }
 
                     const palabraClave = await PalabrasClaveComandos.findOne({ where: { palabra_clave: chatMessage } });
                     if (palabraClave) {
