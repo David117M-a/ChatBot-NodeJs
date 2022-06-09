@@ -27,7 +27,8 @@ const login = async (req = request, res = response) => {
         });
 
     return res.status(200).json({
-        msg: "Logeado"
+        msg: "Logeado",
+        usuario
     });
 }
 
@@ -204,8 +205,8 @@ const createPalabrasACensurar = async (req = request, res = response) => {
         }
 
         let response = await Promise.all(body.palabras.map(async p => {
-            const palabraExiste = await CensuraDelChat.findOne({ where: { palabra: p } });
-            if(palabraExiste) return false;
+            const palabraExiste = await CensuraDelChat.findOne({ where: { idUsuario, palabra: p } });
+            if (palabraExiste) return false;
             const palabra = new CensuraDelChat({
                 idUsuario,
                 palabra: p

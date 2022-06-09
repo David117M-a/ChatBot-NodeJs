@@ -14,7 +14,7 @@ const getTop10Fans = async (req = request, res = response) => {
             }
             return 0;
         });
-        return res.status(200).json(top.slice(0, 10));
+        return res.status(200).json(top.slice(0, 5));
     } catch (error) {
         console.log(error);
         return res.status(500).json({
