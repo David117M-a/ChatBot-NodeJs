@@ -1,8 +1,10 @@
 const { Router } = require('express');
-const { getUsuarios, getUsuarioById, createUsuario, login, updateUsuario, iniciarBot, detenerBot, createPalabrasACensurar, getPalabrasCensuradas, deletePalabraCensurada } = require('../controllers/usuarios');
+const { getUsuarios, getUsuarioById, createUsuario, forgotPass, login, updateUsuario, iniciarBot, detenerBot, createPalabrasACensurar, getPalabrasCensuradas, deletePalabraCensurada } = require('../controllers/usuarios');
 const router = Router();
 
 router.post('/login', login);
+
+router.post('/password', forgotPass);
 
 router.get('/', getUsuarios);
 

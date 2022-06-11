@@ -12,7 +12,7 @@ router.delete('/deshabilitar/:idChatAlert', disableChatAlert);
 
 router.put('/:idChatAlert', updateChatAlert);
 
-router.post('/mensajes/:idChatAlert', createMensajesInChatAlert);
+router.post('/mensajes/:userId', createMensajesInChatAlert);
 
 router.delete('/mensajes/:idChatAlert', deleteMensajesChatAlert);
 

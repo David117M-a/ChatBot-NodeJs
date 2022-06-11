@@ -6,13 +6,27 @@ const getChatAlerts = async (req = request, res = response) => {
     const { idUsuario } = req.params;
     const chatAlertsDB = await ChatAlerts.findAll({ where: { idUsuario: idUsuario } });
 
-    const chatAlerts = [];
+    const suscripcion = [];
+    const unirse = [];
+    const conectarse = [];
     await Promise.all(chatAlertsDB.map(async c => {
         const mensajes = await MensajesChatAlerts.findAll({ where: { idChatAlert: c.id } });
-        chatAlerts.push({ "id": c.id, "idUsuario": c.idUsuario, "accion": c.accion, "activo": c.activo, mensajes });
+        if (c.accion === "suscripcion") {
+            suscripcion.push({ "id": c.id, "idUsuario": c.idUsuario, "accion": c.accion, "activo": c.activo, mensajes });
+        }
+        if (c.accion === "unirse") {
+            unirse.push({ "id": c.id, "idUsuario": c.idUsuario, "accion": c.accion, "activo": c.activo, mensajes });
+        }
+        if (c.accion === "conectarse") {
+            conectarse.push({ "id": c.id, "idUsuario": c.idUsuario, "accion": c.accion, "activo": c.activo, mensajes });
+        }
     }));
 
-    return res.status(200).json(chatAlerts);
+    return res.status(200).json({
+        suscripcion,
+        unirse,
+        conectarse
+    });
 }
 
 const createChatAlerts = async (req = request, res = response) => {
@@ -65,13 +79,20 @@ const updateChatAlert = async (req = request, res = response) => {
 }
 
 const createMensajesInChatAlert = async (req = request, res = response) => {
-    const { idChatAlert } = req.params;
-    const { mensajes } = req.body;
+    const { userId } = req.params;
+    const { mensajes, accion } = req.body;
 
     try {
+        let chatAlert = await ChatAlerts.findOne({ where: { accion, idUsuario: userId } });
+        if (!chatAlert) {
+            chatAlert = new ChatAlerts({ accion });
+            chatAlert.idUsuario = userId;
+            await chatAlert.save();
+        }
+
         await Promise.all(mensajes.map(async m => {
             const mensaje = new MensajesChatAlerts();
-            mensaje.idChatAlert = idChatAlert;
+            mensaje.idChatAlert = chatAlert.id;
             mensaje.mensaje = m;
             await mensaje.save();
         }));

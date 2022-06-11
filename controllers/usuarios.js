@@ -250,6 +250,36 @@ const deletePalabraCensurada = async (req = request, res = response) => {
     }
 }
 
+const forgotPass = async (req = request, res = response) => {
+    let { newPassword, correo } = req.body;
+
+    const usuario = await Usuario.findOne({ where: { correo } });
+    if (!usuario) {
+        return res.status(400).json({
+            msg: 'Correo no encontrado.'
+        });
+    }
+
+    try {
+        const salt = bcryptjs.genSaltSync();
+        newPassword = bcryptjs.hashSync(newPassword, salt);
+
+        await Usuario.update({
+            password: newPassword
+        }, { where: { correo } });
+
+        return res.status(201).json({
+            msg: 'Password actualizado'
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            msg: 'Hable con el administrador'
+        });
+    }
+
+};
+
 module.exports = {
     login,
     getUsuarios,
@@ -260,5 +290,6 @@ module.exports = {
     detenerBot,
     createPalabrasACensurar,
     getPalabrasCensuradas,
-    deletePalabraCensurada
+    deletePalabraCensurada,
+    forgotPass
 }

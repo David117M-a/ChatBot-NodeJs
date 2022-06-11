@@ -195,6 +195,10 @@ class Bot {
         const mensaje = mensajes[Math.floor(Math.random() * (((mensajes.length - 1) + 1) - 0)) + 0].mensaje.replace('{user}', username);
         return mensaje;
     }
+
+    async getStatus () {
+        this.client.readyState();
+    }
 }
 
 module.exports = Bot;
